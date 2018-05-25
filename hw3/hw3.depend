@@ -1,0 +1,5 @@
+# depslib dependency file v1.0
+1449536551 source:g:\codeblocs projects\hw3\hw3q1.c
+	<stdio.h>
+	<stdbool.h>
+

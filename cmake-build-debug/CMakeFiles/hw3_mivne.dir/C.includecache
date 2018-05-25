@@ -1,0 +1,36 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+C:/Users/Pavel/Desktop/hw3_mivne/dflow_calc.c
+dflow_calc.h
+C:/Users/Pavel/Desktop/hw3_mivne/dflow_calc.h
+stdio.h
+-
+malloc.h
+-
+assert.h
+-
+
+C:/Users/Pavel/Desktop/hw3_mivne/dflow_calc.h
+stdlib.h
+-
+stdint.h
+-
+
+C:/Users/Pavel/Desktop/hw3_mivne/dflow_main.c
+stdio.h
+-
+stdlib.h
+-
+string.h
+-
+ctype.h
+-
+dflow_calc.h
+C:/Users/Pavel/Desktop/hw3_mivne/dflow_calc.h
+
