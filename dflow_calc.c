@@ -10,6 +10,7 @@ typedef struct node{
     InstInfo inst;
     int latency;
     int depth;
+    int depth_and_latency;
     int prog_depth;
     int src1_dep_idx;
     int src2_dep_idx;
@@ -17,7 +18,6 @@ typedef struct node{
 
 /////////////////// FUNC DECLAR /////////////////
 Node* buildDependencies(InstInfo arr[], int size, const unsigned int opsLatency[]);
-void printArray(InstInfo arr[], int size);
 void printDependencies(Node* arr, int size);
 int recursiveDepthCalc(Node* arr, unsigned int idx);
 void depthCalcWrapper(Node* node, int size);
@@ -25,14 +25,16 @@ void setProgDepth(Node* arr, int size);
 /////////////////// DECLAR END /////////////////
 
 
-
 ProgCtx analyzeProg(const unsigned int opsLatency[],  InstInfo progTrace[], unsigned int numOfInsts) {
-    //printArray(progTrace,numOfInsts);
 
     if(numOfInsts <=0) return PROG_CTX_NULL;
 
     Node* dependencies = buildDependencies(progTrace,numOfInsts,opsLatency);
+
+    // Calc the depths of each cell
     depthCalcWrapper(dependencies,numOfInsts);
+
+    // Calc the prog depth
     setProgDepth(dependencies,numOfInsts);
 
     //printDependencies(dependencies,numOfInsts);
@@ -64,22 +66,18 @@ int getProgDepth(ProgCtx ctx) {
     return temp[0].prog_depth;
 }
 
-void printArray(InstInfo arr[], int size){
-    for(int i=0; i<size ; i++){
-        printf("%d ",arr[i].opcode);
-    }
-    printf("\n");
-}
-
+// This is debug function.
 void printDependencies(Node* arr, int size){
     for(int i=0; i<size ; i++){
-        printf("%d | %d: %d %d %d | deps: %d %d | latency: %d | depth: %d / %d\n",i,arr[i].inst.opcode,
+        printf("%d | %d: %d %d %d | deps: %d %d | latency: %d | depth: %d | prog depth: %d | depth+lat:%d\n",i,arr[i].inst.opcode,
                arr[i].inst.dstIdx,arr[i].inst.src1Idx,arr[i].inst.src2Idx,
-                arr[i].src1_dep_idx,arr[i].src2_dep_idx,arr[i].latency,arr[i].depth,arr[i].prog_depth);
+                arr[i].src1_dep_idx,arr[i].src2_dep_idx,arr[i].latency,arr[i].depth,
+               arr[i].prog_depth,arr[i].depth_and_latency);
     }
     printf("\n");
 }
 
+// This function builds the array of all data.
 Node* buildDependencies(InstInfo arr[], int size, const unsigned int opsLatency[]){
     Node* nodes_array = malloc(sizeof(Node)*size);
     assert(nodes_array != NULL);
@@ -130,6 +128,7 @@ Node* buildDependencies(InstInfo arr[], int size, const unsigned int opsLatency[
     return nodes_array;
 }
 
+// Recursion wrapper
 void depthCalcWrapper(Node* node, int size){
     for(int i=size-1;i>0;i--){
         (void)recursiveDepthCalc(node,i);
@@ -137,6 +136,7 @@ void depthCalcWrapper(Node* node, int size){
 
 }
 
+// A recursive function which calculates a depth for each cell.
 int recursiveDepthCalc(Node* arr, unsigned int idx){
     //stop condition
     if (idx == 0){
@@ -183,21 +183,25 @@ int recursiveDepthCalc(Node* arr, unsigned int idx){
     return result;
 }
 
+// This function sets for each cell in array the sum of depth and latency.
+// Then it updates the prog_depth filed for the samr maximum value we got.
 void setProgDepth(Node* arr, int size){
-    // find max depth
-    int max_depth = 0;
-    int latency_of_max_depth = 0;
-    int curr_depth;
-    for(int i=0;i<size;i++){
-        curr_depth = arr[i].depth;
-        if(curr_depth > max_depth){
-            max_depth = curr_depth;
-            latency_of_max_depth = arr[i].latency;
+    int max = 0;
+
+    // Set Depth and latency for each cell.
+    for(int i=0;i<size;i++) {
+        arr[i].depth_and_latency = arr[i].depth + arr[i].latency;
+    }
+
+    // Calc max val
+    for(int i=0;i<size;i++) {
+        if(max < arr[i].depth_and_latency){
+            max = arr[i].depth_and_latency;
         }
     }
 
-    // Update max depth in all nodes
-    for(int i=0;i<size;i++){
-        arr[i].prog_depth = max_depth+latency_of_max_depth;
+    // Set for each cell the prog depth
+    for(int i=0;i<size;i++) {
+        arr[i].prog_depth = max;
     }
 }
