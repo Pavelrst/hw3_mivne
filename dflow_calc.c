@@ -139,7 +139,10 @@ void depthCalcWrapper(Node* node, int size){
 
 int recursiveDepthCalc(Node* arr, unsigned int idx){
     //stop condition
-    if (idx == 0) return arr[idx].latency;
+    if (idx == 0){
+        //printf("stop condition was reached: return latency: %d\n",arr[idx].latency);
+        return arr[idx].latency;
+    }
 
     int current_time = arr[idx].latency;
 
@@ -152,22 +155,32 @@ int recursiveDepthCalc(Node* arr, unsigned int idx){
 
 
     // Calculate time for src2 dependency:
-    int src2_dep_index = arr[idx].src1_dep_idx;
+    int src2_dep_index = arr[idx].src2_dep_idx;
     int time_src2_dep = 0;
     if (src2_dep_index != -1){
         time_src2_dep = recursiveDepthCalc(arr,src2_dep_index);
     }
 
+    int result;
+
     // Return the longest time + current time
-    if(time_src1_dep > time_src2_dep){
+    if(time_src1_dep >= time_src2_dep && time_src1_dep != 0){
         //Update current depth
         arr[idx].depth = time_src1_dep;
-        return current_time+time_src1_dep;
-    } else {
+        result = current_time+time_src1_dep;
+    } else if(time_src1_dep < time_src2_dep && time_src2_dep != 0) {
         //Update current depth
         arr[idx].depth = time_src2_dep;
-        return current_time+time_src2_dep;
+        result = current_time+time_src2_dep;
+    } else { // No dependencies.
+        result = current_time;
     }
+
+    if(idx == 1){
+        //printf("result for idx=1 is: %d, time_src1=%d, time_src2=%d \n",result,time_src1_dep,time_src2_dep);
+    }
+
+    return result;
 }
 
 void setProgDepth(Node* arr, int size){
